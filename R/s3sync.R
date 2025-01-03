@@ -102,21 +102,26 @@ s3sync <- function(path = ".", bucket, prefix = "", direction = c("upload", "dow
                                      "%d bucket objects not found in local directory"), 
                             length(missingfiles)))
         }
-
+        
         for (fn in missingfiles) {
+          fn_path_last_char <- substr(fn, nchar(fn), nchar(fn))
+          # If it's only the folder, don't download it
+          # It will be created if a file exists in it
+          if(fn_path_last_char != "/"){
             key <- paste0(prefix, fn)
             dst <- file.path(path, fn)
             dst.dir <- dirname(dst)
             ## create missing directory if needed locally
             if (!dir.exists(dst.dir)) {
-                if (isTRUE(verbose))
-                    message("Creating directory '", dst.dir, "'")
-                dir.create(dst.dir, recursive = TRUE)
+              if (isTRUE(verbose))
+                message("Creating directory '", dst.dir, "'")
+              dir.create(dst.dir, recursive = TRUE)
             }
             ## save object
             if (isTRUE(verbose))
-                message("<== Saving object '", key, "' to '", dst, "'")
+              message("<== Saving object '", key, "' to '", dst, "'")
             save_object(object = key, bucket = bucket, file = dst, ...)
+          }
         }
     }
 
